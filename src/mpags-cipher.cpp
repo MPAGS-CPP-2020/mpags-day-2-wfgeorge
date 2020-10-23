@@ -6,24 +6,28 @@
 // For std::isalpha and std::isupper
 #include <cctype>
 
-// Main function of the mpags-cipher program
-int main(int argc, char* argv[])
-{
-  // Convert the command-line arguments into a more easily usable form
-  const std::vector<std::string> cmdLineArgs {argv, argv+argc};
+//Function to transliterate char and return string
+std::string transformChar( const char in_char );
 
+bool processCommandLine( const std::vector<std::string>& cmdLineArgs, bool& helpRequested, bool& versionRequested, std::string& inputFile, std::string& outputFile )
+{
+  /* process command line arguments storing options in referenced objects
+
+  cmdLineArgs:      Vector of strings containing arguments
+  helpRequested:    Flag to store whether help requested
+  versionRequested: Flag to store whether version number queried
+  inputFile:        String to store name of input text file
+  outputFile:       String to store name of output text file
+
+  return: returns 0 if arguments processed sucessfully
+  */
+  
   // Add a typedef that assigns another name for the given type for clarity
   typedef std::vector<std::string>::size_type size_type;
   const size_type nCmdLineArgs {cmdLineArgs.size()};
 
-  // Options that might be set by the command-line arguments
-  bool helpRequested {false};
-  bool versionRequested {false};
-  std::string inputFile {""};
-  std::string outputFile {""};
-
-  // Process command line arguments - ignore zeroth element, as we know this to
-  // be the program name and don't need to worry about it
+  // Loop over command line arguments 
+  // Ignore zeroth element, as we know this to be the program name
   for (size_type i {1}; i < nCmdLineArgs; ++i) {
 
     if (cmdLineArgs[i] == "-h" || cmdLineArgs[i] == "--help") {
@@ -36,41 +40,116 @@ int main(int argc, char* argv[])
       // Handle input file option
       // Next element is filename unless -i is the last argument
       if (i == nCmdLineArgs-1) {
-	std::cerr << "[error] -i requires a filename argument" << std::endl;
-	// exit main with non-zero return to indicate failure
-	return 1;
+      	std::cerr << "[error] -i requires a filename argument" << std::endl;
+      	// exit main with non-zero return to indicate failure
+      	exit(1);
       }
       else {
-	// Got filename, so assign value and advance past it
-	inputFile = cmdLineArgs[i+1];
-	++i;
+	      // Got filename, so assign value and advance past it
+      	inputFile = cmdLineArgs[i+1];
+      	++i;
       }
     }
     else if (cmdLineArgs[i] == "-o") {
       // Handle output file option
       // Next element is filename unless -o is the last argument
       if (i == nCmdLineArgs-1) {
-	std::cerr << "[error] -o requires a filename argument" << std::endl;
-	// exit main with non-zero return to indicate failure
-	return 1;
+      	std::cerr << "[error] -o requires a filename argument" << std::endl;
+      	// exit main with non-zero return to indicate failure
+      	exit(1);
       }
       else {
-	// Got filename, so assign value and advance past it
-	outputFile = cmdLineArgs[i+1];
-	++i;
+      	// Got filename, so assign value and advance past it
+      	outputFile = cmdLineArgs[i+1];
+      	++i;
       }
     }
     else {
       // Have an unknown flag to output error message and return non-zero
       // exit status to indicate failure
       std::cerr << "[error] unknown argument '" << cmdLineArgs[i] << "'\n";
-      return 1;
+      exit(1);
     }
+  }  
+  return 0;
+}
+
+std::string transformChar( const char in_char ){
+
+  /* take an input char and return transliterated version as string:
+      - convert letter to uppercase
+      - ignore non-alphanumeric chars
+      - change numbers to words
+
+  const char in_char: char to transliterate
+
+  return: string with transliterated char
+  */
+
+  std::string inputText{""};
+
+  // Uppercase alphabetic characters
+  if (std::isalpha(in_char)) {
+    inputText += std::toupper(in_char);
+    return inputText;
   }
 
-  // Handle help, if requested
+  // Transliterate digits to English words
+  switch (in_char) {
+    case '0':
+	    inputText += "ZERO";
+	    break;
+    case '1':
+	    inputText += "ONE";
+	    break;
+    case '2':
+	    inputText += "TWO";
+	    break;
+    case '3':
+	    inputText += "THREE";
+    	break;
+    case '4':
+    	inputText += "FOUR";
+    	break;
+    case '5':
+    	inputText += "FIVE";
+    	break;
+    case '6':
+    	inputText += "SIX";
+    	break;
+    case '7':
+    	inputText += "SEVEN";
+    	break;
+    case '8':
+    	inputText += "EIGHT";
+    	break;
+    case '9':
+	    inputText += "NINE";
+    	break;
+    }
+    
+    return inputText;
+    // If the character isn't alphabetic or numeric, DONT add it.
+    // Our ciphers can only operate on alphabetic characters.
+
+}
+
+
+// Main function of the mpags-cipher program
+int main(int argc, char* argv[])
+{
+  // Convert the command-line arguments into a more easily usable form
+  const std::vector<std::string> cmdLineArgs {argv, argv+argc};
+
+  // Options that might be set by the command-line arguments
+  bool helpRequested {false};
+  bool versionRequested {false};
+  std::string inputFile {""};
+  std::string outputFile {""};
+
+  processCommandLine( cmdLineArgs, helpRequested, versionRequested, inputFile, outputFile);
+
   if (helpRequested) {
-    // Line splitting for readability
     std::cout
       << "Usage: mpags-cipher [-i <file>] [-o <file>]\n\n"
       << "Encrypts/Decrypts input alphanumeric text using classical ciphers\n\n"
@@ -86,7 +165,6 @@ int main(int argc, char* argv[])
     return 0;
   }
 
-  // Handle version, if requested
   // Like help, requires no further action,
   // so return from main with zero to indicate success
   if (versionRequested) {
@@ -108,50 +186,8 @@ int main(int argc, char* argv[])
 
   // Loop over each character from user input
   // (until Return then CTRL-D (EOF) pressed)
-  while(std::cin >> inputChar)
-  {
-    // Uppercase alphabetic characters
-    if (std::isalpha(inputChar)) {
-      inputText += std::toupper(inputChar);
-      continue;
-    }
-
-    // Transliterate digits to English words
-    switch (inputChar) {
-      case '0':
-	inputText += "ZERO";
-	break;
-      case '1':
-	inputText += "ONE";
-	break;
-      case '2':
-	inputText += "TWO";
-	break;
-      case '3':
-	inputText += "THREE";
-	break;
-      case '4':
-	inputText += "FOUR";
-	break;
-      case '5':
-	inputText += "FIVE";
-	break;
-      case '6':
-	inputText += "SIX";
-	break;
-      case '7':
-	inputText += "SEVEN";
-	break;
-      case '8':
-	inputText += "EIGHT";
-	break;
-      case '9':
-	inputText += "NINE";
-	break;
-    }
-
-    // If the character isn't alphabetic or numeric, DONT add it.
-    // Our ciphers can only operate on alphabetic characters.
+  while(std::cin >> inputChar){
+    inputText += transformChar(inputChar);
   }
 
   // Output the transliterated text
