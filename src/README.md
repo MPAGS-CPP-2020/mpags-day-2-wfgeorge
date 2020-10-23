@@ -8,15 +8,17 @@ on a UNIX operating system.
 Windows platforms with Visual Studio 2015 or better are also expected to
 work, but not tested.
 
-To build from a clone of this repository, open a terminal window
-and change directory into that holding this README. Then run:
+Building of this project is directed by CMake. To build the project create a build directory at the same level as the current (source) directory and then let CMake handle the build:
 ```
-$ ls
-LICENSE          README.md        mpags-cipher.cpp
-$ g++ -std=c++11 -Wall -Wextra -Werror -Wfatal-errors -pedantic -Wshadow -o mpags-cipher mpags-cipher.cpp
-$ ./mpags-cipher
+$ cd ..
+$ mkdir build
+$ cd build
+$ cmake ../src/
+$ make
 ```
+If these steps were sucessful then the executable `mpags-cipher` will have been created in the build directory.
 
+# Running 'mpags-cipher'
 If no input file is supplied, `mpags-cipher` will wait for user input
 from the keyboard until RETURN followed by CTRL-D are pressed.
 To ensure the input text can be used with the character sets known to
