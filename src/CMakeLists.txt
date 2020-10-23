@@ -11,7 +11,15 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_CXX_STANDARD 14)
 
 # - Declare the build of mpags-cipher executable
-add_executable(mpags-cipher mpags-cipher.cpp)
+add_executable(mpags-cipher 
+    mpags-cipher.cpp
+    MPAGSCipher/TransformChar.cpp
+    MPAGSCipher/ProcessCommandLine.cpp
+    )
+
+target_include_directories(mpags-cipher
+    PRIVATE MPAGSCipher
+    )
 
 # - Tell CMake which compiler flags we want to set
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -Wfatal-errors -Wshadow -pedantic")
