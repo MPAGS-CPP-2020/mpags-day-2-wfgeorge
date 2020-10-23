@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
 
 // For std::isalpha and std::isupper
 #include <cctype>
@@ -51,28 +52,55 @@ int main(int argc, char* argv[])
   std::string inputText {""};
 
   // Read in user input from stdin/file
-  // Warn that input file option not yet implemented
+  // Or read from stdin if no input file given
   if (!inputFile.empty()) {
-    std::cout << "[warning] input from file ('"
-              << inputFile
-              << "') not implemented yet, using stdin\n";
-  }
+    
+    std::ifstream in_file {inputFile};
+    bool okay_to_read = in_file.good();
 
-  // Loop over each character from user input
-  // (until Return then CTRL-D (EOF) pressed)
-  while(std::cin >> inputChar){
-    inputText += transformChar(inputChar);
+    if(okay_to_read){
+      while(in_file >> inputChar){
+        inputText += transformChar(inputChar);
+      }
+    }
+    else{
+      std::cout << "[warning] input file ('"
+              << inputFile
+              << "') could not be opened.\n";
+      return 1;
+    }
+  }
+  else{
+    // Loop over each character from user input
+    // (until Return then CTRL-D (EOF) pressed)
+    std::cout << "[warning] no input file given, using stdin.\n";
+    while(std::cin >> inputChar){
+      inputText += transformChar(inputChar);
+    }
   }
 
   // Output the transliterated text
-  // Warn that output file option not yet implemented
+  // Either to output file or to stdout if no file specified
   if (!outputFile.empty()) {
-    std::cout << "[warning] output to file ('"
-              << outputFile
-              << "') not implemented yet, using stdout\n";
-  }
+    
+    std::ofstream out_file {outputFile};
+    bool okay_to_write = out_file.good();
 
-  std::cout << inputText << std::endl;
+    if(okay_to_write){
+      out_file << inputText;
+    }
+    else{
+      std::cout << "[warning] output file ('"
+              << outputFile
+              << "') could not be opened.\n";
+      return 1;
+    }
+  }
+  else{
+    //Print output to terminal
+    std::cout << "[warning] no output file given, using stdout.\n";
+    std::cout << inputText << std::endl;
+  }
 
   // No requirement to return from main, but we do so for clarity
   // and for consistency with other functions
