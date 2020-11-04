@@ -1,6 +1,6 @@
 #include "ProcessCommandLine.hpp"
 
-bool processCommandLine( const std::vector<std::string>& cmdLineArgs, bool& helpRequested, bool& versionRequested, std::string& inputFile, std::string& outputFile )
+bool processCommandLine( const std::vector<std::string>& cmdLineArgs, bool& helpRequested, bool& versionRequested, std::string& inputFile, std::string& outputFile, size_t& key, bool& encrypt )
 {
   /* process command line arguments storing options in referenced objects
 
@@ -52,6 +52,65 @@ bool processCommandLine( const std::vector<std::string>& cmdLineArgs, bool& help
       else {
       	// Got filename, so assign value and advance past it
       	outputFile = cmdLineArgs[i+1];
+      	++i;
+      }
+    }
+    else if (cmdLineArgs[i] == "-e") {
+      // Handle encrypt/decrypt option
+      if (i == nCmdLineArgs-1) {
+      	std::cerr << "[error] -e requires an argument" << std::endl;
+      	// exit main with non-zero return to indicate failure
+      	exit(1);
+      }
+      else {
+      	if(cmdLineArgs[i+1] == "1" || cmdLineArgs[i+1] == "TRUE" || cmdLineArgs[i+1] == "True"){
+          encrypt = true;
+        }
+        else if (cmdLineArgs[i+1] == "0" || cmdLineArgs[i+1] == "FALSE" || cmdLineArgs[i+1] == "False"){
+          encrypt = false;
+        }
+        else{
+          std::cerr << "[error] Unrecognised argument after -e" << std::endl;
+          exit(1);
+        }
+      	++i;
+      }
+    }
+    else if (cmdLineArgs[i] == "-k") {
+      // Handle encrypt/decrypt option
+      if (i == nCmdLineArgs-1) {
+      	std::cerr << "[error] -k requires an argument" << std::endl;
+      	// exit main with non-zero return to indicate failure
+      	exit(1);
+      }
+      else {
+      	//Check that cmdLineArgs[i+1] is an integer between 0-25
+        if(cmdLineArgs[i+1].size() > 2){
+          std::cerr << "[error] argument following -k should be an integer in 0-25" << std::endl;
+      	  exit(1);
+        }
+        //If length of string is 1 or 2, check char(s) are digits
+        else if(isdigit(cmdLineArgs[i+1][0])){
+          if(cmdLineArgs[i+1].size() == 2){
+            if(!isdigit(cmdLineArgs[i+1][1])){
+              //Second char is not a number
+              std::cerr << "[error] Key should be an integer between 0-25\n"
+                        << "        Value entered was " << cmdLineArgs[i+1] << std::endl;
+              exit(1);
+            }
+          }
+          //length of string is 2, both chars are digits and number is 0-25 so assign value to key
+          key = stoul(cmdLineArgs[i+1]);
+          if(key > 25){
+            std::cerr << "[error] Key should be an integer between 0-25\n"
+                      << "        Value entered was " << cmdLineArgs[i+1] << std::endl;
+            exit(1);
+          }
+        }
+        else{
+          std::cerr << "[error] argument following -k should be an integer in 0-25" << std::endl;
+          exit(1);
+        }
       	++i;
       }
     }
